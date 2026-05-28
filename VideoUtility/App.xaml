@@ -1,0 +1,61 @@
+﻿<Application x:Class="VideoUtility.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:VideoUtility"
+    xmlns:theme="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2">
+    <Application.Resources>
+        <!--
+        <SolidColorBrush x:Key="Button.NormalColor" Color="#1B1B1B"/>
+        <SolidColorBrush x:Key="Button.HoverOver" Color="Black" />
+        <SolidColorBrush x:Key="Button.Pressed" Color="White" />
+
+        <Style x:Key="FocusVisual">
+            <Setter Property="Control.Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Rectangle Margin="2" StrokeDashArray="1 2" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" SnapsToDevicePixels="true" StrokeThickness="1"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType= "{x:Type Button}">
+            <Setter Property="Background" Value="{StaticResource Button.NormalColor}"/>
+            <Setter Property="Foreground" Value="White"/>
+
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="myButtonBorder" Background="{TemplateBinding Background}"
+                                CornerRadius="5"
+                                BorderThickness="1">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5"/>
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="myButtonBorder" Property="Background" Value="{StaticResource Button.HoverOver}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="myButtonBorder" Property="Background" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        
+        
+        <Style TargetType="ComboBox">
+            <Setter Property="Background" Value="{StaticResource Button.NormalColor}"/>
+
+            <Setter Property="Template">
+                <Setter.Value>
+                    
+                </Setter.Value>
+            </Setter>
+        </Style>
+        -->
+        
+    </Application.Resources>
+</Application>
