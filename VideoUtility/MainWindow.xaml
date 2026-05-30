@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:VideoUtility"
         xmlns:Controals="clr-namespace:VideoUtility.View.Controals"
         mc:Ignorable="d"
-        Title="Video Utility" Height="700" Width="505"
+        Title="Video Utility" Height="600" Width="550"
         ResizeMode="NoResize"
         >
     <Grid>
@@ -52,13 +52,23 @@
                     <ComboBox Name="presetComboBox" Margin="65,10,10,10" SelectedIndex="0" />
 
                     <Label Content="Suffix" Grid.Row="1" VerticalAlignment="Center"/>
-                    <TextBox Name="suffixTextBox" Grid.Row="1" Margin="65,10,10,10" Width="200" HorizontalAlignment="Left"/>
-                    <Label Content="Cuts" Grid.Row="1" VerticalAlignment="Center" Margin="265,0,0,0"/>
-                    <Controals:IntInputControl x:Name="CutsInput" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="330,0,0,0" Width="80"/>
+                    <TextBox Name="suffixTextBox" Grid.Row="1" Margin="65,10,10,10" Width="150" HorizontalAlignment="Left"/>
+                    <Label Content="Cuts" Grid.Row="1" VerticalAlignment="Center" Margin="215,0,0,0"/>
+                    <Controals:IntInputControl x:Name="CutsInput" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="270,0,0,0" Width="80"/>
+                    <Label Content="Use Command" Grid.Row="1" VerticalAlignment="Center" Margin="0,0,40,0" HorizontalAlignment="Right"/>
+                    <Controals:CustomCheckbox x:Name="commandCheckbox" Grid.Row="1" HorizontalAlignment="Right" Margin="10" Width="30"/>
 
                     <Label Content="Encoder" Grid.Row="2" VerticalAlignment="Center"/>
                     <ComboBox Name="encoderComboBox" Grid.Row="2" Margin="85,10,10,10" Width="180" HorizontalAlignment="Left" SelectedIndex="0"/>
                     <ComboBox Name="gpuEncoderComboBox" Grid.Row="2" HorizontalAlignment="Left" Width="150" Margin="280,10,10,10" SelectedIndex="0" Visibility="Hidden"/>
+                    
+                    <Label Grid.Row="2" Content="Command:" Tag ="UI_Command" VerticalAlignment="Center" Visibility="Hidden"/>
+                    <TextBox Grid.Row="2" Name="commandTextBox" Margin="110,10,10,10" Tag ="UI_Command" Visibility="Hidden" />
+                    <Label Grid.Row="3" Tag="UI_Command" Visibility="Hidden">
+                        <TextBlock>
+                            <Run Text="i(" Foreground="Red"/><Run Text="Input instructions" FontWeight="Light" Foreground="Black"/><Run Text=")o(" Foreground="Red"/><Run Text="output instructions" FontWeight="Light" Foreground="Black"/><Run Text=")e(" Foreground="Red"/><Run Text="extension" FontWeight="Light" Foreground="Black"/><Run Text=")" Foreground="Red" />
+                        </TextBlock>
+                    </Label>
 
                     <Label Content="Encoder Preset" Grid.Row="3" VerticalAlignment="Center"/>
                     <ComboBox Name="encoderPresetComboBox" Grid.Row="3" VerticalAlignment="Center" HorizontalAlignment="Left" Width="200" Margin="150,10,10,10" SelectedIndex="0"/>

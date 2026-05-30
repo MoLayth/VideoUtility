@@ -8,10 +8,32 @@ namespace VideoUtility {
         List<PresetData> presets = new List<PresetData>();
         public static MainWindow Instance { get; private set; }
         string selectedFilePath = "";
-        //bool isCurrentlyRenaming = false;
+
+        List<FrameworkElement> nonCommandUI = new(); // this list contain all the element that need to be hidden when the user select (use command)
+        List<FrameworkElement> commandUI = new();
+
+        // i use this (one use) bool to check if i sett all element values to the preset 0
+        // if that so then i can check for any change and show the save button
+        bool isAllTreeValueSetup = false;
         public MainWindow() {
             InitializeComponent();
             Instance = this;
+
+            // setting the lists
+            foreach (UIElement element in editPresetGrid.Children) {
+                if (element is FrameworkElement fe) {
+                    if (fe.Tag != null && fe.Tag.ToString() == "UI_Command") {
+                        commandUI.Add(fe);
+                        continue;
+                    }
+
+                    int row = Grid.GetRow(fe);
+                    if (row == 0 || row == 1 || row == 6) continue;
+
+                    nonCommandUI.Add(fe);
+                }
+            }
+
             Functionality.InitializeFFmpeg();
             Load();
 
@@ -27,8 +49,9 @@ namespace VideoUtility {
             // capture all events
             editPresetGrid.AddHandler(TextBox.TextChangedEvent,new RoutedEventHandler(EditPresetGrid_ValueChanged));
             editPresetGrid.AddHandler(ComboBox.SelectionChangedEvent, new RoutedEventHandler(EditPresetGrid_ValueChanged));
+            editPresetGrid.AddHandler(CustomCheckbox.ValueChangedEvent, new RoutedEventHandler(EditPresetGrid_ValueChanged));
             editPresetGrid.AddHandler(IntInputControl.ValueChangedEvent, new RoutedEventHandler(EditPresetGrid_ValueChanged));
-
+            
 
             renameButton.Click += (s, e) => {
                 if(presets.Count == 0) return;
@@ -82,10 +105,39 @@ namespace VideoUtility {
                 _ = Functionality.ApplayPreset(selectedFilePath, presets[applyPresetComboBox.SelectedIndex]);
             };
 
+            // handling showing and hiding of the ui element when use command box checked
+            commandCheckbox.OnValueChange += (v) => {
+                commandCheckbox_HandleUIVisibility(v);
+            };
+
             this.Closing += (s, e) => {
                 SaverAndLoader.SavePreset(presets);
                 ContextMenuManager.SyncPresetsToRegistry(presets.Select(p => p.Name).ToArray());
             };
+
+            // when all tree element are build then update the ui
+            this.Loaded += (s, e) => {
+                commandCheckbox_HandleUIVisibility(presets[0].useCommand);
+            };
+        }
+
+        private void commandCheckbox_HandleUIVisibility(bool v) {
+            if (v) {
+                foreach (var element in nonCommandUI) {
+                    element.Visibility = Visibility.Hidden;
+                }
+                foreach (var element in commandUI) {
+                    element.Visibility = Visibility.Visible;
+                }
+            }
+            else {
+                foreach (var element in nonCommandUI) {
+                    element.Visibility = Visibility.Visible;
+                }
+                foreach (var element in commandUI) {
+                    element.Visibility = Visibility.Hidden;
+                }
+            }
         }
 
         private void AddButton_Click(object sender, RoutedEventArgs e) {
@@ -113,7 +165,9 @@ namespace VideoUtility {
                 Encoder = 0,
                 ToFormat = 0,
                 AudioState = 0,
-                EncoderPreset = 2
+                EncoderPreset = 2,
+                useCommand = false,
+                RawCommand = "",
             });
             UpdatePresets();
             presetComboBox.SelectedIndex = presets.Count - 1;
@@ -131,16 +185,19 @@ namespace VideoUtility {
             selectedPreset.AudioState = audioComboBox.SelectedIndex;
             selectedPreset.EncoderPreset = encoderPresetComboBox.SelectedIndex;
             selectedPreset.gpuEncoder = gpuEncoderComboBox.SelectedIndex;
-
+            selectedPreset.useCommand = commandCheckbox.Value;
+            selectedPreset.RawCommand = commandTextBox.Text;
             saveButton.Visibility = Visibility.Hidden;
         }
 
         // check if any of the controls values have if that so then show the save button
         private void EditPresetGrid_ValueChanged(object sender, RoutedEventArgs e) {
+            if (!isAllTreeValueSetup) return;
+
             DependencyObject sourceControl = e.OriginalSource as DependencyObject;
 
             // safety checks  
-            if (sourceControl == null || saveButton == null || presetComboBox == null || gpuEncoderComboBox == null || gpuEncoderComboBox == null || presets.Count == 0) return;
+            if (sourceControl == null || saveButton == null || presetComboBox == null || gpuEncoderComboBox == null || gpuEncoderComboBox == null || commandCheckbox == null || commandTextBox == null || presets.Count == 0 ) return;
 
             // ignore changes made in the preset name input window, because those are not "editing" the preset, but rather creating a new one
             if (sourceControl == presetComboBox || encoderPresetComboBox == null) {
@@ -155,7 +212,8 @@ namespace VideoUtility {
             if(currentPreset.Suffix != suffixTextBox.Text || currentPreset.Cuts != CutsInput.Value ||
                 currentPreset.Encoder != encoderComboBox.SelectedIndex || currentPreset.CRF != CRFInput.Value ||
                 currentPreset.ToFormat != formatComboBox.SelectedIndex || currentPreset.AudioState != audioComboBox.SelectedIndex ||
-                currentPreset.EncoderPreset != encoderPresetComboBox.SelectedIndex || currentPreset.gpuEncoder != gpuEncoderComboBox.SelectedIndex) {
+                currentPreset.EncoderPreset != encoderPresetComboBox.SelectedIndex || currentPreset.gpuEncoder != gpuEncoderComboBox.SelectedIndex ||
+                currentPreset.useCommand != commandCheckbox.Value || currentPreset.RawCommand != commandTextBox.Text) {
 
                 saveButton.Visibility = Visibility.Visible;
             }
@@ -176,6 +234,7 @@ namespace VideoUtility {
                 defaultPreset.ToFormat = 0;
                 defaultPreset.AudioState = 0;
                 defaultPreset.EncoderPreset = 2;
+                defaultPreset.RawCommand = "";
 
                 presets.Add(defaultPreset);
             }
@@ -213,16 +272,18 @@ namespace VideoUtility {
             audioComboBox.SelectedIndex = selectedPreset.AudioState;
             gpuEncoderComboBox.SelectedIndex = selectedPreset.gpuEncoder;
 
+            commandTextBox.Text = selectedPreset.RawCommand;
+            commandCheckbox.Value = selectedPreset.useCommand;
+
             if(selectedPreset.Encoder == 4) {
                 gpuEncoderComboBox.Visibility = Visibility.Visible;
             }else gpuEncoderComboBox.Visibility = Visibility.Hidden;
+
+            isAllTreeValueSetup = true;
         }
         public void ShowMessageInApplyPresetTap(string message) {
             messageControl.ShowError(message, 5);
-        }
-        //public void Debug(string debug) {
-        //    test.Content = debug;
-        //}
+        }        
 
         // allow only numbers in the cuts input and with maximum 10
         private void OnlyInt(object Sender, int max, int min) {

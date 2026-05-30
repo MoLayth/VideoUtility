@@ -12,6 +12,7 @@ namespace VideoUtility.Classes {
             "h264_qsv", "hevc_qsv" , "av1_qsv"
         };
 
+        // any videoFormats i add i need to implement it in side the VideoFormatToFFmpegStringIdentifier function also
         public static readonly List<string> videoFormats = new List<string>() { "DEFAULT", "MP4", "MKV", "MOV", "WEBM" };
         public static readonly List<string> audioActions = new List<string>() { "Keep", "Remove" };
         public static readonly List<string> encoderPresets = new List<string>() { "Superfast" , "Veryfast", "Fast", "Medium", "Slow", "Slower" , "VerySlow" };

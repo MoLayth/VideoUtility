@@ -26,7 +26,7 @@ namespace VideoUtility.View.Controals {
         public event Action<int> OnValueChanged;
 
         // Register the Routed Event to bubble up the tree this well becoum useful later
-        // when i want to get nofified when the value changes in the preset editor of any controal
+        // when i want to get nofified when the Value changes in the preset editor of any controal
         public static readonly RoutedEvent ValueChangedEvent = EventManager.RegisterRoutedEvent("ValueChanged",
             RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(IntInputControl));
         public event RoutedEventHandler ValueChanged {

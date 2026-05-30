@@ -1,0 +1,15 @@
+﻿<UserControl x:Class="VideoUtility.View.Controals.CustomCheckbox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:VideoUtility.View.Controals"
+             mc:Ignorable="d" 
+             d:DesignHeight="50" d:DesignWidth="50">
+    <Grid>
+        <Rectangle Fill="Gray"/>
+        <Rectangle Fill="White" Margin="1"/>
+        <Rectangle Name="valueRectangel" Fill="Red" Margin="3" Visibility="Hidden"/>
+        <Rectangle x:Name="body"  Fill="#00111111"/>
+    </Grid>
+</UserControl>

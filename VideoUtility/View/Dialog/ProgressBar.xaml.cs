@@ -22,6 +22,7 @@ namespace VideoUtility.View.Dialog {
             }
             else {
                 FinishEncoding = false;
+                System.Media.SystemSounds.Asterisk.Play();
             }
         }
 

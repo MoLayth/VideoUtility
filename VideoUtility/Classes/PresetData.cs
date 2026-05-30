@@ -1,7 +1,6 @@
 ﻿namespace VideoUtility.Classes {
     public class PresetData {
         public string Name;
-
         public string Suffix;
         public int Cuts;
         public int CRF;
@@ -11,5 +10,7 @@
         public int ToFormat;
         public int AudioState;
 
+        public bool useCommand;
+        public string RawCommand;
     }
 }

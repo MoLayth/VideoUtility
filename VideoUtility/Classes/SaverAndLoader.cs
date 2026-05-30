@@ -5,7 +5,6 @@ using System.Text;
 using System.IO;
 namespace VideoUtility.Classes {
     public static class SaverAndLoader {
-        // sting is the preset name to get the preset data
         public static void SavePreset(List<PresetData> data) {
             string path = GetPresetPath();
 

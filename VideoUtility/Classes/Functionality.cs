@@ -1,7 +1,9 @@
 ﻿namespace VideoUtility.Classes {
     using FFMpegCore;
+    using FFMpegCore.Enums;
     using Microsoft.Win32;
     using System.IO;
+    using System.Text.RegularExpressions;
     using System.Threading.Tasks;
     using System.Windows;
     using System.Windows.Media;
@@ -15,7 +17,7 @@
 
         public static string SelectVideo() {
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Video Files|*.mp4;*.mkv;*.avi;*.mov;*.webm|All Files|*.*";
+            openFileDialog.Filter = "Video Files|*.mp4;*.mkv;*.avi;*.mov;*.webm";
             if (openFileDialog.ShowDialog() == true) {
                 return openFileDialog.FileName;
             }
@@ -49,11 +51,62 @@
 
             for (int i = 0; i < preset.Cuts; i++) {
                 string cut = preset.Cuts == 1 ? "" : $"_cut_{i + 1}";
-                string outputPath = Path.Join(directory, fileNameWithoutExtension + preset.Suffix + cut + $".{videoFormat}");
+                string outputPath = "";
+
+                // if using a command dont add an video format
+                if (preset.useCommand) outputPath = Path.Join(directory, fileNameWithoutExtension + preset.Suffix + cut);
+                else outputPath = Path.Join(directory, fileNameWithoutExtension + preset.Suffix + cut + $".{videoFormat}");
+
                 TimeSpan currentCutDuration = TimeSpan.FromSeconds(cutDuration);
                 previousProgress = 0; // reset for every cut
 
-                if (MediaSettings.encoders[preset.Encoder] == "GPU Acceleration") {
+                if (preset.useCommand) {
+                    var (inputCommand, outputCommand , ext) = GetCommands(preset.RawCommand);
+
+                    if (string.IsNullOrEmpty(ext)) outputPath += Path.GetExtension(inputFile);
+                    else outputPath += "." + ext;
+
+                    string capturedError = "";
+                    try {
+                        // i()o(-vf "scale=-1:720" -c:v libx264 -crf 23)
+                        // i()o(-vf "fps=15,scale=480:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse")e(gif)
+                        await FFMpegArguments.FromFileInput(inputFile, true, options => {
+                            options.WithCustomArgument(inputCommand);
+                        })
+                            .OutputToFile(outputPath, true, options => {
+                                options.WithCustomArgument(outputCommand);
+                            }).NotifyOnError(errorMessage => { capturedError = errorMessage; }).NotifyOnProgress(progress => {
+                                Application.Current.Dispatcher.Invoke(() => {
+                                    double delta = progress - previousProgress;
+                                    totalProgressForAllCuts += delta / preset.Cuts;
+                                    progressBar.SetProgress(totalProgressForAllCuts);
+                                    previousProgress = progress;
+                                });
+                            }, totalTimeSpan: currentCutDuration).ProcessAsynchronously();
+                    }
+                    catch (Exception ex) {
+                        string finalErrorMessage = !string.IsNullOrEmpty(capturedError) ? capturedError : ex.Message;
+
+                        // then i run this method via right click context menu
+                        if (MainWindow.Instance == null) MessageBox.Show(finalErrorMessage, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        else MainWindow.Instance.ShowMessageInApplyPresetTap(finalErrorMessage);
+
+                        if (File.Exists(outputPath)) File.Delete(outputPath);
+
+                        progressBar.FinishEncoding = true;
+                        progressBar.Close();
+
+                        return;
+                    }
+                    finally {
+                        if (i == preset.Cuts - 1) {
+                            progressBar.FinishEncoding = true;
+                            progressBar.Close();
+                        }
+                    }
+
+                }
+                else if (MediaSettings.encoders[preset.Encoder] == "GPU Acceleration") {
                     progressBar.bar.Fill = Brushes.LightBlue;
                     string videoCodec = MediaSettings.supportedGPUEncoders[preset.gpuEncoder];
 
@@ -231,7 +284,20 @@
             }
             #endregion
         }
-
+        private static (string input , string output , string ext) GetCommands(string rawCommand) {
+            Regex regex = new Regex(@"i\((?<input>.*?)\)\s*o\((?<output>.*?)\)\s*e\((?<ext>.*?)\)");
+            Match match = regex.Match(rawCommand);
+            if (match.Success) { 
+                string input = match.Groups["input"].Value.Trim();
+                string output = match.Groups["output"].Value.Trim();
+                string ext = match.Groups["ext"].Value.Trim();
+                //MessageBox.Show($"{input}\n{output}\n{ext}");
+                return (input,output ,ext);
+            }
+            else {
+                return ("","","");
+            }
+        }
         public static bool IsEncoderSupported(string encoder) {
             try {
                 // $"-v error -f lavfi -i color=c=black:s=128x128 -vframes 1 -c:v {encoderName} -f null -"
